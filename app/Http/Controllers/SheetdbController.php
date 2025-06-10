@@ -8,9 +8,9 @@ use SheetDB\SheetDB;
 class SheetdbController extends Controller
 {
     public function getharian(){
-        $sheetdb = new SheetDB('xboqbimlxdltt');
-        dd($sheetdb->get()); 
-        //$data = $sheetdb->get();
+        $sheetdb = new SheetDB('d48ol7yqgt7k0');
+        //dd($sheetdb->get()); 
+        $data = $sheetdb->get();
         
         return view('welcome', compact('data'));
 
