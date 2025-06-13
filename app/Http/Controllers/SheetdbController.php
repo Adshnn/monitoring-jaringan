@@ -7,19 +7,55 @@ use SheetDB\SheetDB;
 
 class SheetdbController extends Controller
 {
-    public function getharian(){
+    public function index(Request $request)
+    {
         $sheetdb = new SheetDB('d48ol7yqgt7k0');
-        //dd($sheetdb->get()); 
-        $data = $sheetdb->get();
-        
-        return view('welcome', compact('data'));
+        $data = collect($sheetdb->get());
+        $paginatedData = paginate($data, 100, null, [
+            'path' => $request->url(),
+            'query' => $request->query(),
+        ]);
 
+
+        $sheetdb1 = new SheetDB('x7304qg0ccpzu');
+        $dataasuransi = collect($sheetdb1->get());
+        $dataasuransi = $dataasuransi->filter(function ($row) {
+            return !empty($row->apname) && !empty($row->hp) && !empty($row->napel);
+        });
+        $paginated = paginate($dataasuransi, 100, null, [
+            'path' => $request->url(),
+            'query' => $request ->query()
+        ]);
+
+        // apname down dari datasuransi
+        $apnameharian = $data->pluck('AP_NAME')->filter()->unique();
+        $filterdatadown = $dataasuransi->filter(function($item) use ($apnameharian){
+            return isset($item->apname) && $apnameharian->contains($item->apname);
+        });
+
+        $paginatedfilterapdown = paginate($filterdatadown, 100, null, [
+            'path' =>$request->url(),
+            'query' =>$request->query(),
+        ]);
+        //dd($filterdata);
+
+
+        // apname up dari datasuransi
+        $filterdataup = $dataasuransi->filter(function($item) use ($apnameharian){
+            return isset($item->apname) && !$apnameharian->contains($item->apname);
+        });
+
+        $paginatedfilterapup = paginate($filterdataup, 100, null, [
+            'path' =>$request->url(),
+            'query' =>$request->query(),
+        ]);
+        //dd($paginatedfilterapdown);
+
+        return view('welcome', [
+            'data' => $paginatedData,
+            'dataasuransi' => $paginated,
+            'datagaul' => $paginatedfilterapdown,
+            'dataup' => $paginatedfilterapup
+        ]);
     }
-
-    public function getAsuransi(){
-        $sheetdb = new SheetDB('x7304qg0ccpzu');
-        $datasuransi = $sheetdb->get();
-        return view('sheet.dataharian', compact('datasuransi'));
-    }
-
 }
